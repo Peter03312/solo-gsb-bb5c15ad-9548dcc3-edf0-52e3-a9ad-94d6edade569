@@ -1,0 +1,22 @@
+services:
+  alignment:
+    build: .
+    image: recording-alignment:1.0.0
+    container_name: recording-alignment
+    ports:
+      - "8080:8080"
+    environment:
+      # SQLite 数据库文件路径（容器内）；启动时自动幂等建表
+      ALIGNMENT_DB_PATH: /data/alignment.db
+    volumes:
+      - alignment-data:/data
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8080/healthz').status==200 else 1)"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 3s
+    restart: unless-stopped
+
+volumes:
+  alignment-data:
